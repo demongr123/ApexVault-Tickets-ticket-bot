@@ -31,10 +31,7 @@ app.listen(PORT, () => {
 });
 
 const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers
-  ]
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers]
 });
 
 const commands = [
@@ -158,19 +155,20 @@ client.on("interactionCreate", async (interaction) => {
         return;
       }
 
-     const pingUser = await interaction.guild.members
-       .fetch(config.pingUserId)
-       .catch(() => null);
+      const pingUser = await interaction.guild.members
+        .fetch(config.pingUserId)
+        .catch(() => null);
 
-     if (!pingUser) {
-       await interaction.reply({
+      if (!pingUser) {
+        await interaction.reply({
           content: `Ping user not found: ${config.pingUserId}`,
           ephemeral: true
-       });
-       return;
-     }
+        });
+        return;
+      }
 
       const buyerRole = interaction.guild.roles.cache.get(config.buyerRoleId);
+
       if (!buyerRole) {
         await interaction.reply({
           content: `Buyer role not found: ${config.buyerRoleId}`,
@@ -224,6 +222,7 @@ client.on("interactionCreate", async (interaction) => {
       });
 
       const member = await interaction.guild.members.fetch(interaction.user.id);
+
       await member.roles.add(buyerRole).catch((error) => {
         console.error("Failed to add buyer role:", error);
       });
@@ -315,15 +314,19 @@ client.on("interactionCreate", async (interaction) => {
     console.error("Interaction error:", error);
 
     if (interaction.replied || interaction.deferred) {
-      await interaction.followUp({
-        content: "An error occurred while processing this action.",
-        ephemeral: true
-      }).catch(() => {});
+      await interaction
+        .followUp({
+          content: "An error occurred while processing this action.",
+          ephemeral: true
+        })
+        .catch(() => {});
     } else {
-      await interaction.reply({
-        content: "An error occurred while processing this action.",
-        ephemeral: true
-      }).catch(() => {});
+      await interaction
+        .reply({
+          content: "An error occurred while processing this action.",
+          ephemeral: true
+        })
+        .catch(() => {});
     }
   }
 });
