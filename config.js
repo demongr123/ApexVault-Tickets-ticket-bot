@@ -10,7 +10,7 @@ module.exports = {
   buyerRoleId: "1482494453070565518",
 
   // Role που γίνεται ping όταν ανοίγει ticket
-  pingRoleId: "1482491328259428523",
+  pingUserId: "1312762550815035414"
 
   ticketPanel: {
     title: "Welcome to ApexVault Tickets",
