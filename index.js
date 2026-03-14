@@ -158,14 +158,17 @@ client.on("interactionCreate", async (interaction) => {
         return;
       }
 
-      const pingRole = interaction.guild.roles.cache.get(config.pingRoleId);
-      if (!pingRole) {
-        await interaction.reply({
-          content: `Ping role not found: ${config.pingRoleId}`,
+     const pingUser = await interaction.guild.members
+       .fetch(config.pingUserId)
+       .catch(() => null);
+
+     if (!pingUser) {
+       await interaction.reply({
+          content: `Ping user not found: ${config.pingUserId}`,
           ephemeral: true
-        });
-        return;
-      }
+       });
+       return;
+     }
 
       const buyerRole = interaction.guild.roles.cache.get(config.buyerRoleId);
       if (!buyerRole) {
