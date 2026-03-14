@@ -2,7 +2,7 @@ module.exports = {
   brandName: "ApexVault Tickets",
   brandColor: "#6D90DD",
   logoUrl: "https://cdn.discordapp.com/attachments/1481730964727140433/1482488647726010378/E43C36D7-3FAF-42AB-8196-CB949F642AB2.png",
-  buyerRoleId: "1482494453070565518",
+  buyerRoleId: "1482522720326521034",
   pingUserId: "1312762550815035414",
 
   ticketPanel: {
