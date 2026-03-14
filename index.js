@@ -30,8 +30,12 @@ app.listen(PORT, () => {
   console.log(`Web server listening on port ${PORT}`);
 });
 
+const { Client, GatewayIntentBits } = require("discord.js");
+
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers]
+  intents: [
+    GatewayIntentBits.Guilds
+  ]
 });
 
 const commands = [
