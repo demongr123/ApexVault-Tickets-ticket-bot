@@ -202,7 +202,7 @@ client.on("interactionCreate", async (interaction) => {
             ]
           },
           {
-            id: pingRole.id,
+            id: pingUser.id,
             allow: [
               PermissionsBitField.Flags.ViewChannel,
               PermissionsBitField.Flags.SendMessages,
@@ -261,7 +261,7 @@ client.on("interactionCreate", async (interaction) => {
       const buttons = new ActionRowBuilder().addComponents(closeButton);
 
       await ticketChannel.send({
-        content: `<@&${pingRole.id}> ${interaction.user}`,
+        content: `<@${pingUser.id}> ${interaction.user}`,
         embeds: [ticketEmbed],
         components: [buttons]
       });
