@@ -1,21 +1,13 @@
 module.exports = {
-  guildId: process.env.GUILD_ID,
-
   brandName: "ApexVault Tickets",
-  brandColor: 0x6D90DD,
-  logoUrl:
-    "https://cdn.discordapp.com/attachments/1481730964727140433/1482488647726010378/E43C36D7-3FAF-42AB-8196-CB949F642AB2.png",
-
-  // Role που παίρνει ο user όταν ανοίγει ticket και βγαίνει όταν το κλείνει
+  brandColor: "#6D90DD",
+  logoUrl: "https://cdn.discordapp.com/attachments/1481730964727140433/1482488647726010378/E43C36D7-3FAF-42AB-8196-CB949F642AB2.png",
   buyerRoleId: "1482494453070565518",
-
-  // Role που γίνεται ping όταν ανοίγει ticket
-  pingUserId: "1312762550815035414"
+  pingUserId: "1312762550815035414",
 
   ticketPanel: {
-    title: "Welcome to ApexVault Tickets",
-    description:
-      "Need assistance? Select one of the options below to open a ticket with our team."
+    title: "ApexVault Tickets",
+    description: "Select a category below to open a ticket."
   },
 
   ticketOptions: [
@@ -28,7 +20,7 @@ module.exports = {
     },
     {
       label: "Replacement",
-      description: "Request a replacement",
+      description: "Open a replacement ticket",
       value: "replacement",
       emoji: "♻️",
       categoryId: "1482496663221309672"
@@ -42,7 +34,7 @@ module.exports = {
     },
     {
       label: "Issues",
-      description: "Report an issue",
+      description: "Open an issues ticket",
       value: "issues",
       emoji: "⚠️",
       categoryId: "1482496868515581962"
@@ -51,7 +43,7 @@ module.exports = {
       label: "Exchange",
       description: "Open an exchange ticket",
       value: "exchange",
-      emoji: "🔄",
+      emoji: "🔁",
       categoryId: "1482496947758829578"
     }
   ]
