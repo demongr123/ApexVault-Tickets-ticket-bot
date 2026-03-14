@@ -1,5 +1,3 @@
-require("dotenv").config();
-
 const express = require("express");
 const {
   Client,
@@ -15,13 +13,13 @@ const {
   Routes,
   SlashCommandBuilder
 } = require("discord.js");
+const config = require("./config");
 
-// -------------------- WEB SERVER FOR RENDER --------------------
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.get("/", (req, res) => {
-  res.send("ApexVault Tickets bot is running.");
+  res.send(`${config.brandName} bot is running.`);
 });
 
 app.get("/health", (req, res) => {
@@ -32,69 +30,17 @@ app.listen(PORT, () => {
   console.log(`Web server listening on port ${PORT}`);
 });
 
-// -------------------- DISCORD CLIENT --------------------
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers]
 });
 
-// -------------------- CONFIG --------------------
-const SUPPORT_ROLE_ID = "1482491328259428523";
-const BUYER_ROLE_ID = "1482494453070565518";
-const BRAND_COLOR = 0x6D90DD;
-const LOGO_URL =
-  "https://cdn.discordapp.com/attachments/1481730964727140433/1482488647726010378/E43C36D7-3FAF-42AB-8196-CB949F642AB2.png";
-
-const CATEGORY_IDS = {
-  purchase: "1482494630137172130",
-  replacement: "1482496663221309672",
-  preorder: "1482496792468652133",
-  issues: "1482496868515581962",
-  exchange: "1482496947758829578"
-};
-
-// -------------------- TICKET OPTIONS --------------------
-const ticketOptions = [
-  {
-    label: "Purchase",
-    description: "Open a purchase ticket",
-    value: "purchase",
-    emoji: "🛒"
-  },
-  {
-    label: "Replacement",
-    description: "Replacement request",
-    value: "replacement",
-    emoji: "♻️"
-  },
-  {
-    label: "Pre Order",
-    description: "Pre order support",
-    value: "preorder",
-    emoji: "📦"
-  },
-  {
-    label: "Issues",
-    description: "Report an issue",
-    value: "issues",
-    emoji: "⚠️"
-  },
-  {
-    label: "Exchange",
-    description: "Exchange request",
-    value: "exchange",
-    emoji: "🔄"
-  }
-];
-
-// -------------------- SLASH COMMANDS --------------------
 const commands = [
   new SlashCommandBuilder()
     .setName("ticket-setup")
-    .setDescription("Send the ApexVault Tickets panel")
+    .setDescription(`Send the ${config.brandName} ticket panel`)
     .toJSON()
 ];
 
-// -------------------- HELPERS --------------------
 function normalizeName(str) {
   return str
     .toLowerCase()
@@ -104,7 +50,7 @@ function normalizeName(str) {
 }
 
 function getTicketOption(value) {
-  return ticketOptions.find((x) => x.value === value);
+  return config.ticketOptions.find((x) => x.value === value);
 }
 
 function findOpenTicketByUser(guild, userId) {
@@ -116,21 +62,6 @@ function findOpenTicketByUser(guild, userId) {
   );
 }
 
-async function addBuyerRole(member) {
-  if (!member || member.roles.cache.has(BUYER_ROLE_ID)) return;
-  await member.roles.add(BUYER_ROLE_ID).catch((error) => {
-    console.error("Failed to add buyer role:", error);
-  });
-}
-
-async function removeBuyerRole(member) {
-  if (!member || !member.roles.cache.has(BUYER_ROLE_ID)) return;
-  await member.roles.remove(BUYER_ROLE_ID).catch((error) => {
-    console.error("Failed to remove buyer role:", error);
-  });
-}
-
-// -------------------- READY --------------------
 client.once("ready", async () => {
   console.log(`Logged in as ${client.user.tag}`);
 
@@ -138,10 +69,7 @@ client.once("ready", async () => {
     const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
 
     await rest.put(
-      Routes.applicationGuildCommands(
-        process.env.CLIENT_ID,
-        process.env.GUILD_ID
-      ),
+      Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
       { body: commands }
     );
 
@@ -151,33 +79,23 @@ client.once("ready", async () => {
   }
 });
 
-// -------------------- INTERACTIONS --------------------
 client.on("interactionCreate", async (interaction) => {
   try {
-    // ---------- /ticket-setup ----------
     if (interaction.isChatInputCommand()) {
       if (interaction.commandName !== "ticket-setup") return;
 
       const panelEmbed = new EmbedBuilder()
-        .setColor(BRAND_COLOR)
+        .setColor(config.brandColor)
         .setAuthor({
-          name: "ApexVault Tickets",
-          iconURL: LOGO_URL
+          name: config.brandName,
+          iconURL: config.logoUrl
         })
-        .setTitle("Welcome to ApexVault Tickets")
-        .setDescription(
-          [
-            "**Need assistance?**",
-            "",
-            "**Select a category below to open a ticket with our team.**",
-            "**Please choose the option that best matches your issue.**"
-          ].join("\n")
-        )
-        .setThumbnail(LOGO_URL)
-        .setImage(LOGO_URL)
+        .setTitle(config.ticketPanel.title)
+        .setDescription(config.ticketPanel.description)
+        .setThumbnail(config.logoUrl)
         .setFooter({
-          text: "ApexVault Tickets Support System",
-          iconURL: LOGO_URL
+          text: `${config.brandName} Support System`,
+          iconURL: config.logoUrl
         })
         .setTimestamp();
 
@@ -185,7 +103,7 @@ client.on("interactionCreate", async (interaction) => {
         .setCustomId("ticket_select")
         .setPlaceholder("Open a ticket")
         .addOptions(
-          ticketOptions.map((option) => ({
+          config.ticketOptions.map((option) => ({
             label: option.label,
             description: option.description,
             value: option.value,
@@ -204,11 +122,9 @@ client.on("interactionCreate", async (interaction) => {
         content: "Ticket panel sent.",
         ephemeral: true
       });
-
       return;
     }
 
-    // ---------- SELECT MENU ----------
     if (interaction.isStringSelectMenu()) {
       if (interaction.customId !== "ticket_select") return;
 
@@ -216,40 +132,27 @@ client.on("interactionCreate", async (interaction) => {
       const selectedOption = getTicketOption(selectedValue);
 
       if (!selectedOption) {
-        await interaction.reply({
-          content: "Invalid ticket option.",
-          ephemeral: true
-        });
+        await interaction.reply({ content: "Invalid ticket option.", ephemeral: true });
         return;
       }
 
-      const existingChannel = findOpenTicketByUser(
-        interaction.guild,
-        interaction.user.id
-      );
-
+      const existingChannel = findOpenTicketByUser(interaction.guild, interaction.user.id);
       if (existingChannel) {
         await interaction.reply({
-          content: `You already have an open ticket: ${existingChannel}\nPlease close your current ticket before opening a new one.`,
+          content: `You already have an open ticket: ${existingChannel}`,
           ephemeral: true
         });
         return;
       }
 
-      const member = await interaction.guild.members
-        .fetch(interaction.user.id)
-        .catch(() => null);
-
-      await addBuyerRole(member);
-
-      const channelName = `ticket-${normalizeName(
-        selectedOption.label
-      )}-${normalizeName(interaction.user.username)}`;
+      const channelName = `ticket-${normalizeName(selectedOption.label)}-${normalizeName(
+        interaction.user.username
+      )}`;
 
       const ticketChannel = await interaction.guild.channels.create({
         name: channelName,
         type: ChannelType.GuildText,
-        parent: CATEGORY_IDS[selectedValue] || null,
+        parent: selectedOption.categoryId,
         topic: `ticket-owner:${interaction.user.id} | ticket-type:${selectedValue}`,
         permissionOverwrites: [
           {
@@ -265,7 +168,7 @@ client.on("interactionCreate", async (interaction) => {
             ]
           },
           {
-            id: SUPPORT_ROLE_ID,
+            id: config.pingRoleId,
             allow: [
               PermissionsBitField.Flags.ViewChannel,
               PermissionsBitField.Flags.SendMessages,
@@ -280,22 +183,28 @@ client.on("interactionCreate", async (interaction) => {
               PermissionsBitField.Flags.SendMessages,
               PermissionsBitField.Flags.ReadMessageHistory,
               PermissionsBitField.Flags.ManageChannels,
-              PermissionsBitField.Flags.ManageMessages
+              PermissionsBitField.Flags.ManageMessages,
+              PermissionsBitField.Flags.ManageRoles
             ]
           }
         ]
       });
 
+      const member = await interaction.guild.members.fetch(interaction.user.id);
+      await member.roles.add(config.buyerRoleId).catch((error) => {
+        console.error("Failed to add buyer role:", error);
+      });
+
       const ticketEmbed = new EmbedBuilder()
-        .setColor(BRAND_COLOR)
+        .setColor(config.brandColor)
         .setAuthor({
-          name: "ApexVault Tickets",
-          iconURL: LOGO_URL
+          name: config.brandName,
+          iconURL: config.logoUrl
         })
         .setTitle(`${selectedOption.emoji} ${selectedOption.label} Ticket`)
         .setDescription(
           [
-            "**Thank you for contacting ApexVault Tickets.**",
+            `**Thank you for contacting ${config.brandName}.**`,
             "",
             `**Opened By:** ${interaction.user.tag}`,
             `**Reason:** ${selectedOption.label}`,
@@ -303,11 +212,10 @@ client.on("interactionCreate", async (interaction) => {
             "**Please describe your issue and wait for a staff response.**"
           ].join("\n")
         )
-        .setThumbnail(LOGO_URL)
-        .setImage(LOGO_URL)
+        .setThumbnail(config.logoUrl)
         .setFooter({
-          text: "ApexVault Tickets System",
-          iconURL: LOGO_URL
+          text: `${config.brandName} Ticket System`,
+          iconURL: config.logoUrl
         })
         .setTimestamp();
 
@@ -320,7 +228,7 @@ client.on("interactionCreate", async (interaction) => {
       const buttons = new ActionRowBuilder().addComponents(closeButton);
 
       await ticketChannel.send({
-        content: `<@&${SUPPORT_ROLE_ID}> ${interaction.user}`,
+        content: `<@&${config.pingRoleId}> ${interaction.user}`,
         embeds: [ticketEmbed],
         components: [buttons]
       });
@@ -329,11 +237,9 @@ client.on("interactionCreate", async (interaction) => {
         content: `Your ticket has been created: ${ticketChannel}`,
         ephemeral: true
       });
-
       return;
     }
 
-    // ---------- CLOSE BUTTON ----------
     if (interaction.isButton()) {
       if (interaction.customId !== "close_ticket") return;
 
@@ -341,11 +247,20 @@ client.on("interactionCreate", async (interaction) => {
       const ownerMatch = topic.match(/ticket-owner:(\d+)/);
       const ownerId = ownerMatch ? ownerMatch[1] : null;
 
-      const ownerMember = ownerId
-        ? await interaction.guild.members.fetch(ownerId).catch(() => null)
-        : null;
+      if (!ownerId || interaction.user.id !== ownerId) {
+        await interaction.reply({
+          content: "Only the buyer who opened this ticket can close it.",
+          ephemeral: true
+        });
+        return;
+      }
 
-      await removeBuyerRole(ownerMember);
+      const member = await interaction.guild.members.fetch(ownerId).catch(() => null);
+      if (member) {
+        await member.roles.remove(config.buyerRoleId).catch((error) => {
+          console.error("Failed to remove buyer role:", error);
+        });
+      }
 
       await interaction.reply({
         content: "This ticket will close in 5 seconds.",
@@ -359,29 +274,23 @@ client.on("interactionCreate", async (interaction) => {
           console.error("Failed to delete ticket channel:", error);
         }
       }, 5000);
-
       return;
     }
   } catch (error) {
     console.error("Interaction error:", error);
 
     if (interaction.replied || interaction.deferred) {
-      await interaction
-        .followUp({
-          content: "An error occurred while processing this action.",
-          ephemeral: true
-        })
-        .catch(() => {});
+      await interaction.followUp({
+        content: "An error occurred while processing this action.",
+        ephemeral: true
+      }).catch(() => {});
     } else {
-      await interaction
-        .reply({
-          content: "An error occurred while processing this action.",
-          ephemeral: true
-        })
-        .catch(() => {});
+      await interaction.reply({
+        content: "An error occurred while processing this action.",
+        ephemeral: true
+      }).catch(() => {});
     }
   }
 });
 
-// -------------------- LOGIN --------------------
 client.login(process.env.TOKEN);
