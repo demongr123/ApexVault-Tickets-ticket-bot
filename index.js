@@ -1,5 +1,6 @@
 const express = require("express");
 const {
+const {
   Client,
   GatewayIntentBits,
   ChannelType,
@@ -30,10 +31,11 @@ app.listen(PORT, () => {
   console.log(`Web server listening on port ${PORT}`);
 });
 
+const { Client, GatewayIntentBits } = require("discord.js");
+
 const client = new Client({
   intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers
+    GatewayIntentBits.Guilds
   ]
 });
 
@@ -72,10 +74,7 @@ client.once("ready", async () => {
     const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
 
     await rest.put(
-      Routes.applicationGuildCommands(
-        process.env.CLIENT_ID,
-        process.env.GUILD_ID
-      ),
+      Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
       { body: commands }
     );
 
@@ -138,18 +137,11 @@ client.on("interactionCreate", async (interaction) => {
       const selectedOption = getTicketOption(selectedValue);
 
       if (!selectedOption) {
-        await interaction.reply({
-          content: "Invalid ticket option.",
-          ephemeral: true
-        });
+        await interaction.reply({ content: "Invalid ticket option.", ephemeral: true });
         return;
       }
 
-      const existingChannel = findOpenTicketByUser(
-        interaction.guild,
-        interaction.user.id
-      );
-
+      const existingChannel = findOpenTicketByUser(interaction.guild, interaction.user.id);
       if (existingChannel) {
         await interaction.reply({
           content: `You already have an open ticket: ${existingChannel}`,
@@ -158,9 +150,9 @@ client.on("interactionCreate", async (interaction) => {
         return;
       }
 
-      const channelName = `ticket-${normalizeName(
-        selectedOption.label
-      )}-${normalizeName(interaction.user.username)}`;
+      const channelName = `ticket-${normalizeName(selectedOption.label)}-${normalizeName(
+        interaction.user.username
+      )}`;
 
       const ticketChannel = await interaction.guild.channels.create({
         name: channelName,
@@ -186,7 +178,6 @@ client.on("interactionCreate", async (interaction) => {
               PermissionsBitField.Flags.ViewChannel,
               PermissionsBitField.Flags.SendMessages,
               PermissionsBitField.Flags.ReadMessageHistory,
-              PermissionsBitField.Flags.ManageMessages
             ]
           },
           {
