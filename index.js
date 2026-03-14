@@ -158,6 +158,24 @@ client.on("interactionCreate", async (interaction) => {
         return;
       }
 
+      const pingRole = interaction.guild.roles.cache.get(config.pingRoleId);
+      if (!pingRole) {
+        await interaction.reply({
+          content: `Ping role not found: ${config.pingRoleId}`,
+          ephemeral: true
+        });
+        return;
+      }
+
+      const buyerRole = interaction.guild.roles.cache.get(config.buyerRoleId);
+      if (!buyerRole) {
+        await interaction.reply({
+          content: `Buyer role not found: ${config.buyerRoleId}`,
+          ephemeral: true
+        });
+        return;
+      }
+
       const channelName = `ticket-${normalizeName(
         selectedOption.label
       )}-${normalizeName(interaction.user.username)}`;
@@ -181,7 +199,7 @@ client.on("interactionCreate", async (interaction) => {
             ]
           },
           {
-            id: config.pingRoleId,
+            id: pingRole.id,
             allow: [
               PermissionsBitField.Flags.ViewChannel,
               PermissionsBitField.Flags.SendMessages,
@@ -203,7 +221,7 @@ client.on("interactionCreate", async (interaction) => {
       });
 
       const member = await interaction.guild.members.fetch(interaction.user.id);
-      await member.roles.add(config.buyerRoleId).catch((error) => {
+      await member.roles.add(buyerRole).catch((error) => {
         console.error("Failed to add buyer role:", error);
       });
 
@@ -240,7 +258,7 @@ client.on("interactionCreate", async (interaction) => {
       const buttons = new ActionRowBuilder().addComponents(closeButton);
 
       await ticketChannel.send({
-        content: `<@&${config.pingRoleId}> ${interaction.user}`,
+        content: `<@&${pingRole.id}> ${interaction.user}`,
         embeds: [ticketEmbed],
         components: [buttons]
       });
@@ -268,8 +286,10 @@ client.on("interactionCreate", async (interaction) => {
       }
 
       const member = await interaction.guild.members.fetch(ownerId).catch(() => null);
-      if (member) {
-        await member.roles.remove(config.buyerRoleId).catch((error) => {
+      const buyerRole = interaction.guild.roles.cache.get(config.buyerRoleId);
+
+      if (member && buyerRole) {
+        await member.roles.remove(buyerRole).catch((error) => {
           console.error("Failed to remove buyer role:", error);
         });
       }
