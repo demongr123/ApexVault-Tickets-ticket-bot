@@ -31,7 +31,7 @@ app.listen(PORT, () => {
 });
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers]
+  intents: [GatewayIntentBits.Guilds]
 });
 
 const commands = [
@@ -155,28 +155,6 @@ client.on("interactionCreate", async (interaction) => {
         return;
       }
 
-      const pingUser = await interaction.guild.members
-        .fetch(config.pingUserId)
-        .catch(() => null);
-
-      if (!pingUser) {
-        await interaction.reply({
-          content: `Ping user not found: ${config.pingUserId}`,
-          ephemeral: true
-        });
-        return;
-      }
-
-      const buyerRole = interaction.guild.roles.cache.get(config.buyerRoleId);
-
-      if (!buyerRole) {
-        await interaction.reply({
-          content: `Buyer role not found: ${config.buyerRoleId}`,
-          ephemeral: true
-        });
-        return;
-      }
-
       const channelName = `ticket-${normalizeName(
         selectedOption.label
       )}-${normalizeName(interaction.user.username)}`;
@@ -200,31 +178,16 @@ client.on("interactionCreate", async (interaction) => {
             ]
           },
           {
-            id: pingUser.id,
-            allow: [
-              PermissionsBitField.Flags.ViewChannel,
-              PermissionsBitField.Flags.SendMessages,
-              PermissionsBitField.Flags.ReadMessageHistory
-            ]
-          },
-          {
             id: client.user.id,
             allow: [
               PermissionsBitField.Flags.ViewChannel,
               PermissionsBitField.Flags.SendMessages,
               PermissionsBitField.Flags.ReadMessageHistory,
               PermissionsBitField.Flags.ManageChannels,
-              PermissionsBitField.Flags.ManageMessages,
-              PermissionsBitField.Flags.ManageRoles
+              PermissionsBitField.Flags.ManageMessages
             ]
           }
         ]
-      });
-
-      const member = await interaction.guild.members.fetch(interaction.user.id);
-
-      await member.roles.add(buyerRole).catch((error) => {
-        console.error("Failed to add buyer role:", error);
       });
 
       const ticketEmbed = new EmbedBuilder()
@@ -260,7 +223,7 @@ client.on("interactionCreate", async (interaction) => {
       const buttons = new ActionRowBuilder().addComponents(closeButton);
 
       await ticketChannel.send({
-        content: `<@${pingUser.id}> ${interaction.user}`,
+        content: `${interaction.user}`,
         embeds: [ticketEmbed],
         components: [buttons]
       });
@@ -281,19 +244,10 @@ client.on("interactionCreate", async (interaction) => {
 
       if (!ownerId || interaction.user.id !== ownerId) {
         await interaction.reply({
-          content: "Only the buyer who opened this ticket can close it.",
+          content: "Only the user who opened this ticket can close it.",
           ephemeral: true
         });
         return;
-      }
-
-      const member = await interaction.guild.members.fetch(ownerId).catch(() => null);
-      const buyerRole = interaction.guild.roles.cache.get(config.buyerRoleId);
-
-      if (member && buyerRole) {
-        await member.roles.remove(buyerRole).catch((error) => {
-          console.error("Failed to remove buyer role:", error);
-        });
       }
 
       await interaction.reply({
