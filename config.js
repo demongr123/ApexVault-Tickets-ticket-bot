@@ -1,51 +1,58 @@
 module.exports = {
   guildId: process.env.GUILD_ID,
 
-  // Το role που θα γίνεται ping όταν ανοίγει ticket
-  supportRoleId: "1480671765909733472",
+  brandName: "ApexVault Tickets",
+  brandColor: 0x6D90DD,
+  logoUrl:
+    "https://cdn.discordapp.com/attachments/1481730964727140433/1482488647726010378/E43C36D7-3FAF-42AB-8196-CB949F642AB2.png",
 
-  // Βάλε εδώ category ID αν θες όλα τα tickets να μπαίνουν σε συγκεκριμένη κατηγορία
-  ticketsCategoryId: "1480671767453499498",
+  // Role που παίρνει ο user όταν ανοίγει ticket και βγαίνει όταν το κλείνει
+  buyerRoleId: "1482494453070565518",
 
-  // Το κανάλι όπου θα κάνεις το /ticket-setup
-  panelChannelId: "1480671767453499499",
+  // Role που γίνεται ping όταν ανοίγει ticket
+  pingRoleId: "1482491328259428523",
 
   ticketPanel: {
-    title: "Welcome to Niro Market",
+    title: "Welcome to ApexVault Tickets",
     description:
-      "Need assistance? Select a category below to connect with our dedicated team. We're here to help you with any questions or inquiries you may have."
+      "Need assistance? Select one of the options below to open a ticket with our team."
   },
 
   ticketOptions: [
     {
-      label: "Questions",
-      description: "To ask your general queries",
-      value: "questions",
-      emoji: "❓"
-    },
-    {
       label: "Purchase",
-      description: "Purchase Ticket",
+      description: "Open a purchase ticket",
       value: "purchase",
-      emoji: "🛒"
-    },
-    {
-      label: "Support",
-      description: "Support for product",
-      value: "support",
-      emoji: "🛠️"
+      emoji: "🛒",
+      categoryId: "1482494630137172130"
     },
     {
       label: "Replacement",
-      description: "Replacement for your product",
+      description: "Request a replacement",
       value: "replacement",
-      emoji: "♻️"
+      emoji: "♻️",
+      categoryId: "1482496663221309672"
     },
     {
-      label: "Giveaway winner",
-      description: "Invite reward/giveaway winner",
-      value: "giveaway_winner",
-      emoji: "🎉"
+      label: "Pre Order",
+      description: "Open a pre order ticket",
+      value: "pre_order",
+      emoji: "📦",
+      categoryId: "1482496792468652133"
+    },
+    {
+      label: "Issues",
+      description: "Report an issue",
+      value: "issues",
+      emoji: "⚠️",
+      categoryId: "1482496868515581962"
+    },
+    {
+      label: "Exchange",
+      description: "Open an exchange ticket",
+      value: "exchange",
+      emoji: "🔄",
+      categoryId: "1482496947758829578"
     }
   ]
 };
